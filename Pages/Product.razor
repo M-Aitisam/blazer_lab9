@@ -1,0 +1,25 @@
+﻿@page "/product"
+@using blazer_lab9.Data
+@inject CartService CartService
+
+<div>
+    <h3>@ProductData.Name</h3>
+    <p>Price: $@ProductData.Price</p>
+    <button @onclick="AddToCart">Add to Cart</button>
+</div>
+
+@code {
+    // Defining a sample product for initialization.
+    // This will be replaced with actual dynamic data when implemented.
+    private Data.Product ProductData { get; set; } = new Data.Product
+        {
+            Id = 1,
+            Name = "Sample Product",   // Initial name for testing
+            Price = 19.99M             // Initial price for testing
+        };
+
+    private void AddToCart()
+    {
+        CartService.AddToCart(ProductData);  // Add the current product to the cart
+    }
+}
