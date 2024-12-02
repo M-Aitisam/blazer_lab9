@@ -1,0 +1,12 @@
+﻿@page "/component-state"
+@inject blazer_lab9.Shared_State.AppState AppState
+<h3>ComponentState</h3>
+
+<button @onclick="IncrementCounter">Increment App Counter</button>
+<p>Current Counter Value is : @AppState.Counter</p>
+@code {
+	public void IncrementCounter()
+	{
+		AppState.Counter++;
+	}
+}

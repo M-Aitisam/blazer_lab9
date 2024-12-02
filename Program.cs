@@ -1,7 +1,9 @@
+
 using Blazored.LocalStorage;
 using blazer_lab9.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using blazer_lab9.Shared_State;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddBlazoredLocalStorage(); // Add Blazored Local Storage
 builder.Services.AddScoped<CartService>(); // Register CartService with DI
+builder.Services.AddSingleton<AppState>(); // Register CartService with DI
 
 var app = builder.Build();
 
