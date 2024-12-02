@@ -2,24 +2,50 @@
 @using blazer_lab9.Data
 @inject CartService CartService
 
-<div>
-    <h3>@ProductData.Name</h3>
-    <p>Price: $@ProductData.Price</p>
-    <button @onclick="AddToCart">Add to Cart</button>
+<h1>Products</h1>
+
+<div class="product-container">
+    @foreach (var product in ProductList)
+    {
+        <div class="product-card">
+            <h3>@product.Name</h3>
+            <p>Price: $@product.Price</p>
+            <button @onclick="() => AddToCart(product)">Add to Cart</button>
+        </div>
+    }
 </div>
 
-@code {
-    // Defining a sample product for initialization.
-    // This will be replaced with actual dynamic data when implemented.
-    private Data.Product ProductData { get; set; } = new Data.Product
-        {
-            Id = 1,
-            Name = "Sample Product",   // Initial name for testing
-            Price = 19.99M             // Initial price for testing
-        };
+@if (ShowNotification)
+{
+    <div class="notification">
+        Successfully added to cart!
+    </div>
+}
 
-    private void AddToCart()
+@code {
+    private List<Data.Product> ProductList { get; set; } = new()
     {
-        CartService.AddToCart(ProductData);  // Add the current product to the cart
+        new Data.Product { Id = 1, Name = "Sample Product 1", Price = 1.99M },
+        new Data.Product { Id = 2, Name = "Sample Product 2", Price = 9.99M },
+        new Data.Product { Id = 3, Name = "Sample Product 3", Price = 8.99M },
+        new Data.Product { Id = 4, Name = "Sample Product 4", Price = 3.99M },
+        new Data.Product { Id = 5, Name = "Sample Product 5", Price = 6.99M },
+        new Data.Product { Id = 6, Name = "Sample Product 6", Price = 5.99M },
+        new Data.Product { Id = 7, Name = "Sample Product 7", Price = 2.99M },
+        new Data.Product { Id = 8, Name = "Sample Product 8", Price = 3.99M }
+    };
+
+    private bool ShowNotification { get; set; } = false;
+
+    private async void AddToCart(Data.Product product)
+    {
+        CartService.AddToCart(product);
+        ShowNotification = true;
+
+        // Hide the notification after 2 seconds
+        await Task.Delay(2000);
+        ShowNotification = false;
+
+        StateHasChanged();
     }
 }

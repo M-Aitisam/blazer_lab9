@@ -17,3 +17,19 @@
         </article>
     </main>
 </div>
+
+@code {
+    [Inject]
+    public CartService CartService { get; set; } = default!;
+
+    private bool _isInitialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isInitialized)
+        {
+            _isInitialized = true;
+            await CartService.InitializeCartAsync();
+        }
+    }
+}

@@ -8,9 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddBlazoredLocalStorage(); // Install Blazored.LocalStorage package
-builder.Services.AddSingleton<CartService>();
-
+builder.Services.AddBlazoredLocalStorage(); // Add Blazored Local Storage
+builder.Services.AddScoped<CartService>(); // Register CartService with DI
 
 var app = builder.Build();
 
@@ -18,14 +17,11 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseHsts(); // Use HTTPS Strict Transport Security
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.MapBlazorHub();

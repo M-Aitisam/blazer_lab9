@@ -1,18 +1,29 @@
-﻿using System.Text.Json;
+﻿using Blazored.LocalStorage;
+using System.Text.Json;
 
 namespace blazer_lab9.Data
 {
     public class CartService
     {
-        private readonly string _cartFilePath;
+        private readonly ILocalStorageService _localStorageService;
         private readonly object _lock = new();
+        private bool _isInitialized;
 
         public List<CartItem> CartItems { get; private set; } = new();
         public event Action? OnCartChanged;
 
-        public CartService(string cartFilePath = "cart.json")
+        public CartService(ILocalStorageService localStorageService)
         {
-            _cartFilePath = cartFilePath;
+            _localStorageService = localStorageService;
+        }
+
+        public async Task InitializeCartAsync()
+        {
+            if (_isInitialized)
+                return;
+
+            _isInitialized = true;
+            await LoadCartFromLocalStorage();
         }
 
         public void AddToCart(Product product)
@@ -29,7 +40,7 @@ namespace blazer_lab9.Data
                     CartItems.Add(new CartItem { Product = product, Quantity = 1 });
                 }
 
-                SaveCart();
+                SaveCartToLocalStorage();
                 NotifyCartChanged();
             }
         }
@@ -42,7 +53,7 @@ namespace blazer_lab9.Data
                 if (existingItem != null)
                 {
                     CartItems.Remove(existingItem);
-                    SaveCart();
+                    SaveCartToLocalStorage();
                     NotifyCartChanged();
                 }
             }
@@ -50,66 +61,33 @@ namespace blazer_lab9.Data
 
         public decimal GetTotalPrice()
         {
-            lock (_lock)
-            {
-                return CartItems.Sum(item => item.Product.Price * item.Quantity);
-            }
-        }
-
-        public void SaveCart()
-        {
-            lock (_lock)
-            {
-                try
-                {
-                    var cartData = JsonSerializer.Serialize(CartItems);
-                    File.WriteAllText(_cartFilePath, cartData);
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Error saving cart: {ex.Message}");
-                }
-            }
-        }
-
-        public void LoadCart()
-        {
-            lock (_lock)
-            {
-                try
-                {
-                    if (File.Exists(_cartFilePath))
-                    {
-                        var cartData = File.ReadAllText(_cartFilePath);
-                        CartItems = JsonSerializer.Deserialize<List<CartItem>>(cartData) ?? new();
-                        NotifyCartChanged();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Error loading cart: {ex.Message}");
-                    CartItems = new(); // Reset to avoid issues
-                }
-            }
+            return CartItems.Sum(item => item.Product.Price * item.Quantity);
         }
 
         public void ClearCart()
         {
-            lock (_lock)
+            CartItems.Clear();
+            SaveCartToLocalStorage();
+            NotifyCartChanged();
+        }
+
+        private async Task LoadCartFromLocalStorage()
+        {
+            var cartData = await _localStorageService.GetItemAsStringAsync("cartData");
+            if (!string.IsNullOrEmpty(cartData))
             {
-                CartItems.Clear();
-                SaveCart();
+                CartItems = JsonSerializer.Deserialize<List<CartItem>>(cartData) ?? new();
                 NotifyCartChanged();
             }
         }
 
-        private void NotifyCartChanged() => OnCartChanged?.Invoke();
-
-        private void LogError(string message)
+        private async void SaveCartToLocalStorage()
         {
-            // Replace with your preferred logging framework, e.g., ILogger.
-            Console.WriteLine(message);
+            var cartData = JsonSerializer.Serialize(CartItems);
+            await _localStorageService.SetItemAsStringAsync("cartData", cartData);
         }
+
+        private void NotifyCartChanged() => OnCartChanged?.Invoke();
     }
 
     public class CartItem
